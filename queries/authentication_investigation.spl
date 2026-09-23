@@ -1,0 +1,85 @@
+ BOTSv2 - Authentication Failure Investigation
+ SPL queries used during the investigation
+
+
+1. Failed Logons by Host
+Purpose: Initial triage to identify the host with thehighest number of Windows failed logon events.
+
+
+index="botsv2" earliest=0 (EventCode=4625 OR EventID=4625)
+| stats count by host
+| sort - count
+
+
+
+2. Failed Authentication Over Time
+Purpose: Identify temporal patterns and spikes infailed authentication activity.
+
+
+index="botsv2" earliest=0 (EventCode=4625 OR EventID=4625)
+| timechart span=5m count
+
+
+3. Source Address and Account Correlation
+Purpose: Investigate failed logons on mercury and correlate source addresses with accounts and logon types.
+
+
+index="botsv2" earliest=0 host="mercury" (EventCode=4625 OR EventID=4625)
+| stats count values(Account_Name) as Accounts values(Logon_Type) as LogonType by Source_Network_Address
+| sort - count
+
+
+
+
+4. Administrator Authentication Failure Details
+Purpose: Inspect failed authentication events originating from 10.0.1.220 in greater detail.
+
+
+index="botsv2" earliest=0 host="mercury" EventCode=4625 Source_Network_Address="10.0.1.220"
+| table _time Source_Network_Address Account_Name Logon_Type Failure_Reason
+| sort _time
+
+
+
+5. Successful Logon Correlation
+Purpose: Check whether the same source successfully authenticated to the Administrator account.
+
+
+index="botsv2" earliest=0 host="mercury" EventCode=4624 Source_Network_Address="10.0.1.220" Account_Name="Administrator"
+| stats count earliest(_time) as FirstSuccess latest(_time) as LastSuccess
+| convert ctime(FirstSuccess) ctime(LastSuccess)
+
+
+
+
+6. Authentication Periodicity Analysis
+Purpose: Calculate intervals between failed Administrator authentication events to identify recurring behavior.
+
+
+index="botsv2" earliest=0 host="mercury" EventCode=4625 Source_Network_Address="10.0.1.220" Account_Name="Administrator"
+| sort 0 _time
+| streamstats current=f last(_time) as PreviousAttempt
+| eval IntervalSeconds=_time-PreviousAttempt
+| stats min(IntervalSeconds) as MinInterval avg(IntervalSeconds) as AvgInterval median(IntervalSeconds) as MedianInterval max(IntervalSeconds) as MaxInterval
+
+
+
+
+7. Authentication Context
+Purpose: Summarize authentication characteristics for the investigated Administrator failures.
+
+
+index=botsv2 earliest=0 host=mercury EventCode=4625 Source_Network_Address="10.0.1.220" Account_Name="Administrator"
+| stats count as Failures values(Logon_Type) as LogonType values(Logon_Process) as LogonProcess values(Authentication_Package) as AuthenticationPackage values(Workstation_Name) as Workstation
+
+
+
+
+8. Network Telemetry Correlation
+Purpose: Correlate the suspected source address with network connections observed in Splunk Stream telemetry.
+
+
+index=botsv2 earliest=0 sourcetype="stream:tcp" (src_ip="10.0.1.220" OR dest_ip="10.0.1.220")
+| stats count by src_ip dest_ip src_port dest_port
+| sort - count
+| head 30
