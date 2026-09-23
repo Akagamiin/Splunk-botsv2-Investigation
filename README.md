@@ -1,5 +1,5 @@
-## Splunk-botsv2-Investigation
-#Scrutinizing and Investigating Windows, Linux, and Network logs with the Splunk 
+# Splunk-botsv2-Investigation
+## Scrutinizing and Investigating Windows, Linux, and Network logs with the Splunk 
 A Blue Team / SOC investigation using Splunk Enterprise and the BOTSv2 dataset.
 
 The goal of this project was to investigate a large volume of Windows authentication failures, narrow the scope to the most relevant activity, correlate Windows authentication logs with network telemetry, and determine whether the behavior was consistent with brute-force activity or another authentication anomaly.
@@ -16,7 +16,7 @@ The scope was later narrowed to **513 failed authentication events** involving t
 
 ---
 
-**1. Initial Triage — Failed Logons by Host**
+## 1. Initial Triage — Failed Logons by Host
 
 The first step was to identify which systems generated the highest number of Windows Event ID 4625 failed logons.
 
@@ -26,19 +26,19 @@ The first step was to identify which systems generated the highest number of Win
 
 ---
 
-**2. Failed Authentication Activity Over Time**
+## 2. Failed Authentication Activity Over Time
 
 Failed authentication events were plotted over time using five-minute intervals.
 
 The timeline showed recurring authentication failures throughout August 2017, including several short-lived spikes.
 
-One notable interval on August 29 contained approximately *34 failed logon events within five minutes*.
+One notable interval on August 29 contained approximately **34 failed logon events within five minutes*.
 
 ![Failed Authentication Over Time](screenshots/02-failed-authentication-over-time.png)
 
 ---
 
-**3. Source Address and Account Correlation**
+## 3. Source Address and Account Correlation
 
 After narrowing the investigation to `mercury`, the source network addresses, associated accounts, and logon types were examined.
 
@@ -49,13 +49,13 @@ Two main source addresses were identified:
 
 The 513 events associated with `10.0.1.220` involved the privileged `Administrator` account.
 
-All observed events used *Logon Type 3*, which represents a network logon.
+All observed events used **Logon Type 3**, which represents a network logon.
 
 ![Source Address and Account Correlation](screenshots/03-source-address-account-correlation.png)
 
 ---
 
-**4. Administrator Authentication Failure Details**
+## 4. Administrator Authentication Failure Details
 
 The 513 events associated with `10.0.1.220` were investigated in greater detail because they involved a privileged account.
 
@@ -76,7 +76,7 @@ The repeated failures against a privileged account made this activity worth furt
 
 ---
 
-**5. Successful Logon Correlation**
+## 5. Successful Logon Correlation
 
 The next step was to determine whether the same source successfully authenticated using the `Administrator` account.
 
@@ -88,7 +88,7 @@ No corresponding successful authentication was observed.
 
 ---
 
-**6. Authentication Periodicity Analysis**
+## 6. Authentication Periodicity Analysis
 
 The time intervals between consecutive failed authentication events were calculated.
 
@@ -102,14 +102,14 @@ This recurring timing pattern suggested automated authentication activity rather
 
 ---
 
-**7. Authentication Context**
+## 7. Authentication Context
 
 Additional Windows authentication fields were examined to better understand the activity.
 
 The 513 investigated events showed:
 
 | Field | Value |
-|---|---|
+|:---:|:---:|
 | Failures | `513` |
 | Logon Type | `3` |
 | Logon Process | `Advapi` |
@@ -124,7 +124,7 @@ However, they do not conclusively identify the exact application or service resp
 
 ---
 
-**8. Network Telemetry Correlation**
+## 8. Network Telemetry Correlation
 
 Splunk Stream telemetry was used to correlate the authentication activity with network traffic.
 
