@@ -62,7 +62,7 @@ The 513 events associated with `10.0.1.220` were investigated in greater detail 
 The observed characteristics were:
 
 | Field | Value |
-|---|---|
+|:---|---:|
 | Source address | `10.0.1.220` |
 | Destination host | `mercury` |
 | Account | `Administrator` |
