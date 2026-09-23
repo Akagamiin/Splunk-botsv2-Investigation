@@ -1,5 +1,5 @@
- BOTSv2 - Authentication Failure Investigation
- SPL queries used during the investigation
+BOTSv2 - Authentication Failure Investigation
+SPL queries used during the investigation
 
 
 1. Failed Logons by Host
@@ -71,7 +71,6 @@ Purpose: Summarize authentication characteristics for the investigated Administr
 
 index=botsv2 earliest=0 host=mercury EventCode=4625 Source_Network_Address="10.0.1.220" Account_Name="Administrator"
 | stats count as Failures values(Logon_Type) as LogonType values(Logon_Process) as LogonProcess values(Authentication_Package) as AuthenticationPackage values(Workstation_Name) as Workstation
-
 
 
 
